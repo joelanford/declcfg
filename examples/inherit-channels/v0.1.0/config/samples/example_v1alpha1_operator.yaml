@@ -1,0 +1,7 @@
+apiVersion: example.my.domain/v1alpha1
+kind: Operator
+metadata:
+  name: operator-sample
+spec:
+  # Add fields here
+  foo: bar

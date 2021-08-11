@@ -1,6 +1,6 @@
 # declcfg
 
-`declcfg` is a small toolkit that implements several useful idempotent functions for DC-based packages:
+`declcfg` is a small toolkit that implements several useful idempotent functions for DC-based packages
 
 ## Install
 

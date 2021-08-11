@@ -494,8 +494,8 @@ github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af/go.mod h1:Nht
 github.com/joefitzgerald/rainbow-reporter v0.1.0/go.mod h1:481CNgqmVHQZzdIbN52CupLJyoVwB10FQ/IQlF1pdL8=
 github.com/joelanford/ignore v0.0.0-20210607151042-0d25dc18b62d h1:A2/B900ip/Z20TzkLeGRNy1s6J2HmH9AmGt+dHyqb4I=
 github.com/joelanford/ignore v0.0.0-20210607151042-0d25dc18b62d/go.mod h1:7HQupe4vyNxMKXmM5DFuwXHsqwMyglcYmZBtlDPIcZ8=
-github.com/joelanford/operator-registry v1.12.2-0.20210719211906-d36dab96a303 h1:fXrrfNvSHJnP97ZoP5NDsN/E2lEqzx+WaKi9+uo1akQ=
-github.com/joelanford/operator-registry v1.12.2-0.20210719211906-d36dab96a303/go.mod h1:sRQIgDMZZdUcmHltzyCnM6RUoDF+WS8Arj1BQIARDS8=
+github.com/joelanford/operator-registry v1.12.2-0.20210721025046-a8d185d7a62c h1:3/wXCDihjvr4hy91zzZWoketJRE49LethC0eIzWRxNw=
+github.com/joelanford/operator-registry v1.12.2-0.20210721025046-a8d185d7a62c/go.mod h1:sRQIgDMZZdUcmHltzyCnM6RUoDF+WS8Arj1BQIARDS8=
 github.com/jonboulle/clockwork v0.1.0/go.mod h1:Ii8DK3G1RaLaWxj9trq07+26W01tbo22gdxWY5EU2bo=
 github.com/json-iterator/go v1.1.6/go.mod h1:+SdeFBvtyEkXs7REEP0seUULqWtbJapLOCVDaaPEHmU=
 github.com/json-iterator/go v1.1.7/go.mod h1:KdQUCv79m/52Kvf8AW2vK1V8akMuk1QjK/uOdHXbAo4=

@@ -1,4 +1,4 @@
-package inheritchannels
+package cmd
 
 import (
 	"fmt"
@@ -12,7 +12,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewCmd() *cobra.Command {
+func newInheritChannelsCmd() *cobra.Command {
 	output := ""
 	cmd := &cobra.Command{
 		Use:  "inherit-channels <indexRef> <packageName>",

@@ -10,8 +10,10 @@ require (
 	github.com/operator-framework/operator-registry v0.0.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.2.1
+	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	k8s.io/apimachinery v0.20.6
+	k8s.io/client-go v0.20.6
 	rsc.io/letsencrypt v0.0.3 // indirect
 )
 
-replace github.com/operator-framework/operator-registry => github.com/joelanford/operator-registry v1.12.2-0.20210719211906-d36dab96a303
+replace github.com/operator-framework/operator-registry => github.com/joelanford/operator-registry v1.12.2-0.20210721025046-a8d185d7a62c

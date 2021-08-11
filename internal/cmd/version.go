@@ -1,4 +1,4 @@
-package version
+package cmd
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewCmd() *cobra.Command {
+func newVersionCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "version",
 		Short: "Print version information",

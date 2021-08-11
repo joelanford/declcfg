@@ -1,23 +1,25 @@
-package semver
+package cmd
 
 import (
 	"fmt"
-	"io"
-	"os"
-
 	"github.com/joelanford/declcfg/internal/action"
 	oraction "github.com/operator-framework/operator-registry/alpha/action"
 	"github.com/operator-framework/operator-registry/alpha/declcfg"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"io"
+	"os"
 )
 
-func NewCmd() *cobra.Command {
+
+
+func newInlineBundlesCmd() *cobra.Command {
+	pruneFromNonChannelHeads := false
+	bundleImages := []string{}
 	output := ""
-	channelNames := []string{}
-	skipPatch := false
+
 	cmd := &cobra.Command{
-		Use:  "semver <indexRef> <packageName>",
+		Use:  "inline-bundles <indexRef> <packageName>",
 		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ref := args[0]
@@ -43,15 +45,16 @@ func NewCmd() *cobra.Command {
 				logrus.Fatalf("render index %q: %v", ref, err)
 			}
 
-			s := action.Semver{
-				Configs:      *cfg,
-				PackageName:  packageName,
-				ChannelNames: channelNames,
-				SkipPatch:    skipPatch,
+			i := action.InlineBundles{
+				Configs:                  *cfg,
+				PackageName:              packageName,
+				BundleImages:             bundleImages,
+				PruneFromNonChannelHeads: pruneFromNonChannelHeads,
+				Logger:                   logrus.StandardLogger(),
 			}
-			out, err := s.Run()
+			out, err := i.Run(cmd.Context())
 			if err != nil {
-				logrus.Fatalf("semver %q: %v", packageName, err)
+				logrus.Fatalf("inline bundles for package %q: %v", packageName, err)
 			}
 
 			if err := write(*out, os.Stdout); err != nil {
@@ -61,9 +64,8 @@ func NewCmd() *cobra.Command {
 			return nil
 		},
 	}
-
+	cmd.Flags().BoolVarP(&pruneFromNonChannelHeads, "prune", "p", false, "Prune objects for bundles that are not channel heads.")
+	cmd.Flags().StringSliceVarP(&bundleImages, "bundles", "b", nil, "Specific bundle image references to inline objects for.")
 	cmd.Flags().StringVarP(&output, "output", "o", "json", "Output format (json|yaml)")
-	cmd.Flags().BoolVar(&skipPatch, "skip-patch", false, "Add skips for intermediate semver patch versions")
-	cmd.Flags().StringSliceVarP(&channelNames, "channels", "c", nil, "Channels to order as semver (default: all channels in package")
 	return cmd
 }

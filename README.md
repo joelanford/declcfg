@@ -81,3 +81,12 @@ version in that particular z-stream.
 ```
 
 See [examples/semver/build.sh](examples/semver/build.sh)
+
+### `inline-bundles`
+
+The `inline-bundles` command updates the `olm.bundle.object` properties by pulling bundle images and inlining their manifests. This command can also idempotently prune `olm.bundle.object` properties from non-channel-head bundles.
+
+For example, to make sure all channel heads (and only channel heads) for a particular package have `olm.bundle.object` properties present, just run the following:
+```
+$ declcfg inline-bundles my-index my-package --prune
+```

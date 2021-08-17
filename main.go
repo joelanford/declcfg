@@ -1,12 +1,16 @@
 package main
 
 import (
+	"io/ioutil"
+
 	"github.com/joelanford/declcfg/internal/cmd"
 	"github.com/sirupsen/logrus"
 )
 
 func main() {
-	if err := cmd.New().Execute(); err != nil {
-		logrus.Fatal(err)
+	logrus.SetOutput(ioutil.Discard)
+	log := logrus.New()
+	if err := cmd.New(log).Execute(); err != nil {
+		log.Fatal(err)
 	}
 }

@@ -58,7 +58,7 @@ func (i InlineBundles) Run(ctx context.Context) (*declcfg.DeclarativeConfig, err
 		}
 		defer func() {
 			if err := imageRegistry.Destroy(); err != nil {
-				logrus.Warnf("Could not destroy containerd registry: %v", err)
+				i.Logger.Warnf("Could not destroy containerd registry: %v", err)
 			}
 		}()
 		i.Registry = imageRegistry

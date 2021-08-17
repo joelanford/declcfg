@@ -12,7 +12,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func newInheritChannelsCmd() *cobra.Command {
+func newInheritChannelsCmd(log *logrus.Logger) *cobra.Command {
 	output := ""
 	cmd := &cobra.Command{
 		Use:  "inherit-channels <indexRef> <packageName>",
@@ -38,7 +38,7 @@ func newInheritChannelsCmd() *cobra.Command {
 
 			cfg, err := r.Run(cmd.Context())
 			if err != nil {
-				logrus.Fatalf("render index %q: %v", ref, err)
+				log.Fatalf("render index %q: %v", ref, err)
 			}
 
 			i := action.InheritChannels{
@@ -47,11 +47,11 @@ func newInheritChannelsCmd() *cobra.Command {
 			}
 			out, err := i.Run()
 			if err != nil {
-				logrus.Fatalf("inherit channels for package %q: %v", packageName, err)
+				log.Fatalf("inherit channels for package %q: %v", packageName, err)
 			}
 
 			if err := write(*out, os.Stdout); err != nil {
-				logrus.Fatal(err)
+				log.Fatal(err)
 			}
 
 			return nil

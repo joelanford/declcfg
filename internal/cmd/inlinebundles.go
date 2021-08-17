@@ -13,7 +13,7 @@ import (
 
 
 
-func newInlineBundlesCmd() *cobra.Command {
+func newInlineBundlesCmd(log *logrus.Logger) *cobra.Command {
 	pruneFromNonChannelHeads := false
 	bundleImages := []string{}
 	output := ""
@@ -42,7 +42,7 @@ func newInlineBundlesCmd() *cobra.Command {
 
 			cfg, err := r.Run(cmd.Context())
 			if err != nil {
-				logrus.Fatalf("render index %q: %v", ref, err)
+				log.Fatalf("render index %q: %v", ref, err)
 			}
 
 			i := action.InlineBundles{
@@ -50,15 +50,15 @@ func newInlineBundlesCmd() *cobra.Command {
 				PackageName:              packageName,
 				BundleImages:             bundleImages,
 				PruneFromNonChannelHeads: pruneFromNonChannelHeads,
-				Logger:                   logrus.StandardLogger(),
+				Logger:                   log,
 			}
 			out, err := i.Run(cmd.Context())
 			if err != nil {
-				logrus.Fatalf("inline bundles for package %q: %v", packageName, err)
+				log.Fatalf("inline bundles for package %q: %v", packageName, err)
 			}
 
 			if err := write(*out, os.Stdout); err != nil {
-				logrus.Fatal(err)
+				log.Fatal(err)
 			}
 
 			return nil

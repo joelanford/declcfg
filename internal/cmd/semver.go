@@ -12,7 +12,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func newSemverCmd() *cobra.Command {
+func newSemverCmd(log *logrus.Logger) *cobra.Command {
 	output := ""
 	channelNames := []string{}
 	skipPatch := false
@@ -40,7 +40,7 @@ func newSemverCmd() *cobra.Command {
 
 			cfg, err := r.Run(cmd.Context())
 			if err != nil {
-				logrus.Fatalf("render index %q: %v", ref, err)
+				log.Fatalf("render index %q: %v", ref, err)
 			}
 
 			s := action.Semver{
@@ -51,11 +51,11 @@ func newSemverCmd() *cobra.Command {
 			}
 			out, err := s.Run()
 			if err != nil {
-				logrus.Fatalf("semver %q: %v", packageName, err)
+				log.Fatalf("semver %q: %v", packageName, err)
 			}
 
 			if err := write(*out, os.Stdout); err != nil {
-				logrus.Fatal(err)
+				log.Fatal(err)
 			}
 
 			return nil

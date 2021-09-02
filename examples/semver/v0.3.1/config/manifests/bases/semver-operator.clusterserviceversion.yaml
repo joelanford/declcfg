@@ -35,7 +35,6 @@ spec:
     type: AllNamespaces
   keywords:
   - declarative config
-  - replaces mode
   - example
   links:
   - name: Dc Inherit Channels Operator

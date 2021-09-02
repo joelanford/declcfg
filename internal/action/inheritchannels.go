@@ -5,7 +5,6 @@ import (
 
 	"github.com/jinzhu/copier"
 	"github.com/operator-framework/operator-registry/alpha/declcfg"
-	"github.com/operator-framework/operator-registry/alpha/property"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
@@ -14,105 +13,84 @@ type InheritChannels struct {
 	PackageName string
 }
 
-func (i InheritChannels) Run() (*declcfg.DeclarativeConfig, error) {
-	return inheritChannels(i.Configs, i.PackageName)
-}
-
-func inheritChannels(in declcfg.DeclarativeConfig, packageName string) (*declcfg.DeclarativeConfig, error) {
+func (inherit InheritChannels) Run() (*declcfg.DeclarativeConfig, error) {
 	var out declcfg.DeclarativeConfig
-	if err := copier.Copy(&out, &in); err != nil {
+	if err := copier.Copy(&out, &inherit.Configs); err != nil {
 		return nil, fmt.Errorf("failed to copy input DC: %v", err)
 	}
 
-	bundles := map[string]bundle{}
-	for i := range out.Bundles {
-		if out.Bundles[i].Package != packageName {
+	// allReplaces tracks every entry each bundle replaces across all channels
+	// inherit-channels is only supported when no bundle replaces two or more
+	// different bundles globally, so we use this map to verify this requirement
+	allReplaces := map[string]sets.String{}
+
+	// replaces tracks the replaces value for each bundle. if the allReplaces
+	// bundle check described above passes, the replaces map will tell us what
+	// the globally replaced bundle is for each bundle.
+	replaces := map[string]string{}
+
+	// entryChannels maps a bundle to the set of channels it is a member of.
+	entryChannels := map[string]sets.String{}
+	for _, channel := range out.Channels {
+		if channel.Package != inherit.PackageName {
 			continue
 		}
+		for _, e := range channel.Entries {
+			if _, ok := allReplaces[e.Name]; !ok {
+				allReplaces[e.Name] = sets.NewString()
+			}
+			allReplaces[e.Name] = allReplaces[e.Name].Insert(e.Replaces)
+			replaces[e.Name] = e.Replaces
 
-		b, err := newBundle(&out.Bundles[i])
-		if err != nil {
-			return nil, err
+			if _, ok := entryChannels[e.Name]; !ok {
+				entryChannels[e.Name] = sets.NewString()
+			}
+			entryChannels[e.Name] = entryChannels[e.Name].Insert(channel.Name)
 		}
-		bundles[out.Bundles[i].Name] = *b
+	}
+	for name, entryReplacesSet := range allReplaces {
+		if entryReplacesSet.Len() < 1{
+			return nil, fmt.Errorf("entry %q has multiple replaces (%v): channel-specific replaces not supported", name, entryReplacesSet.List())
+		}
 	}
 
-	heads, err := getHeads(bundles)
-	if err != nil {
-		return nil, fmt.Errorf("get channel heads from bundles: %v", err)
+	// now that we know all of the channels of all of the entries, it is
+	// just a matter of finding bundles that replace other bundles that are
+	// in the parent bundle's channels.
+	newEntries := map[string][]declcfg.ChannelEntry{}
+	for _, ch := range out.Channels {
+		for _, e := range ch.Entries {
+			curChannels := entryChannels[e.Name]
+			replacedChannels, ok := entryChannels[e.Replaces]
+			inheritChannels := sets.NewString()
+			if ok {
+				inheritChannels = curChannels.Difference(replacedChannels)
+			}
+			// if replacedChannels is missing some channels present in
+			// curChannels, then we've found a tail bundle that references an
+			// entry in another channel.
+			//
+			// step through the replaces chain from
+			// here and add new entries in the current channel for every bundle
+			// in the chain.
+			if inheritChannels.Len() > 0 {
+				cur := e.Replaces
+				for cur != "" {
+					replace := replaces[cur]
+					newEntries[ch.Name] = append(newEntries[ch.Name], declcfg.ChannelEntry{
+						Name:      cur,
+						Replaces:  replace,
+					})
+					cur = replace
+				}
+			}
+		}
 	}
 
-	for _, head := range heads {
-		addChannelsToDescendents(bundles, head)
+	// add all of the new entries for each channel
+	for i := range out.Channels {
+		out.Channels[i].Entries = append(out.Channels[i].Entries, newEntries[out.Channels[i].Name]...)
 	}
 
 	return &out, nil
-}
-
-func getHeads(bundles map[string]bundle) (map[string]bundle, error) {
-	inChannel := map[string]sets.String{}
-	replacedInChannel := map[string]sets.String{}
-	skipped := sets.NewString()
-	for _, b := range bundles {
-		replaces := map[string]struct{}{}
-		for _, ch := range b.Channels {
-			replaces[ch.Replaces] = struct{}{}
-
-			in, ok := inChannel[ch.Name]
-			if !ok {
-				in = sets.NewString()
-			}
-			in.Insert(b.Name)
-			inChannel[ch.Name] = in
-
-			rep, ok := replacedInChannel[ch.Name]
-			if !ok {
-				rep = sets.NewString()
-			}
-			rep.Insert(ch.Replaces)
-			replacedInChannel[ch.Name] = rep
-		}
-		for _, skip := range b.Skips {
-			skipped.Insert(string(skip))
-		}
-		if len(replaces) > 1 {
-			return nil, fmt.Errorf("bundle %q has multiple replaces: channel-specific replaces not supported", b.Name)
-		}
-	}
-
-	heads := map[string]bundle{}
-	for name, in := range inChannel {
-		replaced := replacedInChannel[name]
-		chHeads := in.Difference(replaced).Difference(skipped)
-		for _, h := range chHeads.List() {
-			heads[h] = bundles[h]
-		}
-	}
-	return heads, nil
-}
-
-func addChannelsToDescendents(bundleMap map[string]bundle, cur bundle) {
-	for _, ch := range cur.Channels {
-		next, ok := bundleMap[ch.Replaces]
-		if !ok {
-			continue
-		}
-		if len(next.Channels) == 0 {
-			continue
-		}
-		addCh := property.Channel{Name: ch.Name, Replaces: next.Channels[0].Replaces}
-		found := false
-		for _, nch := range next.Channels {
-			if nch == addCh {
-				found = true
-				break
-			}
-		}
-		if !found {
-			next.Bundle.Properties = append(next.Bundle.Properties, property.MustBuildChannel(ch.Name, next.Channels[0].Replaces))
-			next.Channels = append(next.Channels, addCh)
-			bundleMap[next.Name] = next
-		}
-		addChannelsToDescendents(bundleMap, next)
-	}
 }

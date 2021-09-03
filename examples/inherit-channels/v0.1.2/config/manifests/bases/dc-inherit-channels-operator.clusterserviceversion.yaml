@@ -47,5 +47,4 @@ spec:
   provider:
     name: Joe Lanford
     url: https://github.com/joelanford/declcfg
-  replaces: dc-inherit-channels-operator.v0.1.1
   version: 0.0.0

@@ -3,13 +3,34 @@ defaultChannel: stable
 name: dc-inherit-channels-operator
 schema: olm.package
 ---
+entries:
+- name: dc-inherit-channels-operator.v0.1.0
+name: alpha
+package: dc-inherit-channels-operator
+schema: olm.channel
+---
+entries:
+- name: dc-inherit-channels-operator.v0.1.1
+  replaces: dc-inherit-channels-operator.v0.1.0
+- name: dc-inherit-channels-operator.v0.1.0
+name: beta
+package: dc-inherit-channels-operator
+schema: olm.channel
+---
+entries:
+- name: dc-inherit-channels-operator.v0.1.2
+  replaces: dc-inherit-channels-operator.v0.1.1
+- name: dc-inherit-channels-operator.v0.1.1
+  replaces: dc-inherit-channels-operator.v0.1.0
+- name: dc-inherit-channels-operator.v0.1.0
+name: stable
+package: dc-inherit-channels-operator
+schema: olm.channel
+---
 image: quay.io/joelanford/dc-inherit-channels-operator-bundle:v0.1.0
 name: dc-inherit-channels-operator.v0.1.0
 package: dc-inherit-channels-operator
 properties:
-- type: olm.channel
-  value:
-    name: alpha
 - type: olm.gvk
   value:
     group: example.my.domain
@@ -19,22 +40,12 @@ properties:
   value:
     packageName: dc-inherit-channels-operator
     version: 0.1.0
-- type: olm.channel
-  value:
-    name: beta
-- type: olm.channel
-  value:
-    name: stable
 schema: olm.bundle
 ---
 image: quay.io/joelanford/dc-inherit-channels-operator-bundle:v0.1.1
 name: dc-inherit-channels-operator.v0.1.1
 package: dc-inherit-channels-operator
 properties:
-- type: olm.channel
-  value:
-    name: beta
-    replaces: dc-inherit-channels-operator.v0.1.0
 - type: olm.gvk
   value:
     group: example.my.domain
@@ -44,20 +55,12 @@ properties:
   value:
     packageName: dc-inherit-channels-operator
     version: 0.1.1
-- type: olm.channel
-  value:
-    name: stable
-    replaces: dc-inherit-channels-operator.v0.1.0
 schema: olm.bundle
 ---
 image: quay.io/joelanford/dc-inherit-channels-operator-bundle:v0.1.2
 name: dc-inherit-channels-operator.v0.1.2
 package: dc-inherit-channels-operator
 properties:
-- type: olm.channel
-  value:
-    name: stable
-    replaces: dc-inherit-channels-operator.v0.1.1
 - type: olm.gvk
   value:
     group: example.my.domain

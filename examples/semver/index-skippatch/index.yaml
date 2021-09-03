@@ -3,13 +3,67 @@ defaultChannel: stable
 name: semver-operator
 schema: olm.package
 ---
+entries:
+- name: semver-operator.v0.1.0
+- name: semver-operator.v0.1.1
+- name: semver-operator.v0.1.2
+- name: semver-operator.v0.1.3
+  skips:
+  - semver-operator.v0.1.0
+  - semver-operator.v0.1.1
+  - semver-operator.v0.1.2
+- name: semver-operator.v0.2.0
+- name: semver-operator.v0.2.1
+- name: semver-operator.v0.2.2
+- name: semver-operator.v0.2.3
+  replaces: semver-operator.v0.1.3
+  skips:
+  - semver-operator.v0.2.0
+  - semver-operator.v0.2.1
+  - semver-operator.v0.2.2
+name: alpha
+package: semver-operator
+schema: olm.channel
+---
+entries:
+- name: semver-operator.v0.2.0
+- name: semver-operator.v0.2.1
+- name: semver-operator.v0.2.2
+- name: semver-operator.v0.2.3
+  skips:
+  - semver-operator.v0.2.0
+  - semver-operator.v0.2.1
+  - semver-operator.v0.2.2
+- name: semver-operator.v0.3.0
+- name: semver-operator.v0.3.1
+- name: semver-operator.v0.3.2
+- name: semver-operator.v0.3.3
+  replaces: semver-operator.v0.2.3
+  skips:
+  - semver-operator.v0.3.0
+  - semver-operator.v0.3.1
+  - semver-operator.v0.3.2
+name: beta
+package: semver-operator
+schema: olm.channel
+---
+entries:
+- name: semver-operator.v0.3.0
+- name: semver-operator.v0.3.1
+- name: semver-operator.v0.3.2
+- name: semver-operator.v0.3.3
+  skips:
+  - semver-operator.v0.3.0
+  - semver-operator.v0.3.1
+  - semver-operator.v0.3.2
+name: stable
+package: semver-operator
+schema: olm.channel
+---
 image: quay.io/joelanford/semver-operator-bundle:v0.1.0
 name: semver-operator.v0.1.0
 package: semver-operator
 properties:
-- type: olm.channel
-  value:
-    name: alpha
 - type: olm.gvk
   value:
     group: example.my.domain
@@ -25,10 +79,6 @@ image: quay.io/joelanford/semver-operator-bundle:v0.1.1
 name: semver-operator.v0.1.1
 package: semver-operator
 properties:
-- type: olm.channel
-  value:
-    name: alpha
-    replaces: semver-operator.v0.1.0
 - type: olm.gvk
   value:
     group: example.my.domain
@@ -44,10 +94,6 @@ image: quay.io/joelanford/semver-operator-bundle:v0.1.2
 name: semver-operator.v0.1.2
 package: semver-operator
 properties:
-- type: olm.channel
-  value:
-    name: alpha
-    replaces: semver-operator.v0.1.0
 - type: olm.gvk
   value:
     group: example.my.domain
@@ -57,18 +103,12 @@ properties:
   value:
     packageName: semver-operator
     version: 0.1.2
-- type: olm.skips
-  value: semver-operator.v0.1.1
 schema: olm.bundle
 ---
 image: quay.io/joelanford/semver-operator-bundle:v0.1.3
 name: semver-operator.v0.1.3
 package: semver-operator
 properties:
-- type: olm.channel
-  value:
-    name: alpha
-    replaces: semver-operator.v0.1.0
 - type: olm.gvk
   value:
     group: example.my.domain
@@ -78,23 +118,12 @@ properties:
   value:
     packageName: semver-operator
     version: 0.1.3
-- type: olm.skips
-  value: semver-operator.v0.1.1
-- type: olm.skips
-  value: semver-operator.v0.1.2
 schema: olm.bundle
 ---
 image: quay.io/joelanford/semver-operator-bundle:v0.2.0
 name: semver-operator.v0.2.0
 package: semver-operator
 properties:
-- type: olm.channel
-  value:
-    name: alpha
-    replaces: semver-operator.v0.1.3
-- type: olm.channel
-  value:
-    name: beta
 - type: olm.gvk
   value:
     group: example.my.domain
@@ -110,14 +139,6 @@ image: quay.io/joelanford/semver-operator-bundle:v0.2.1
 name: semver-operator.v0.2.1
 package: semver-operator
 properties:
-- type: olm.channel
-  value:
-    name: alpha
-    replaces: semver-operator.v0.1.3
-- type: olm.channel
-  value:
-    name: beta
-    replaces: semver-operator.v0.2.0
 - type: olm.gvk
   value:
     group: example.my.domain
@@ -127,22 +148,12 @@ properties:
   value:
     packageName: semver-operator
     version: 0.2.1
-- type: olm.skips
-  value: semver-operator.v0.2.0
 schema: olm.bundle
 ---
 image: quay.io/joelanford/semver-operator-bundle:v0.2.2
 name: semver-operator.v0.2.2
 package: semver-operator
 properties:
-- type: olm.channel
-  value:
-    name: alpha
-    replaces: semver-operator.v0.1.3
-- type: olm.channel
-  value:
-    name: beta
-    replaces: semver-operator.v0.2.0
 - type: olm.gvk
   value:
     group: example.my.domain
@@ -152,24 +163,12 @@ properties:
   value:
     packageName: semver-operator
     version: 0.2.2
-- type: olm.skips
-  value: semver-operator.v0.2.0
-- type: olm.skips
-  value: semver-operator.v0.2.1
 schema: olm.bundle
 ---
 image: quay.io/joelanford/semver-operator-bundle:v0.2.3
 name: semver-operator.v0.2.3
 package: semver-operator
 properties:
-- type: olm.channel
-  value:
-    name: alpha
-    replaces: semver-operator.v0.1.3
-- type: olm.channel
-  value:
-    name: beta
-    replaces: semver-operator.v0.2.0
 - type: olm.gvk
   value:
     group: example.my.domain
@@ -179,25 +178,12 @@ properties:
   value:
     packageName: semver-operator
     version: 0.2.3
-- type: olm.skips
-  value: semver-operator.v0.2.0
-- type: olm.skips
-  value: semver-operator.v0.2.1
-- type: olm.skips
-  value: semver-operator.v0.2.2
 schema: olm.bundle
 ---
 image: quay.io/joelanford/semver-operator-bundle:v0.3.0
 name: semver-operator.v0.3.0
 package: semver-operator
 properties:
-- type: olm.channel
-  value:
-    name: beta
-    replaces: semver-operator.v0.2.3
-- type: olm.channel
-  value:
-    name: stable
 - type: olm.gvk
   value:
     group: example.my.domain
@@ -213,14 +199,6 @@ image: quay.io/joelanford/semver-operator-bundle:v0.3.1
 name: semver-operator.v0.3.1
 package: semver-operator
 properties:
-- type: olm.channel
-  value:
-    name: beta
-    replaces: semver-operator.v0.2.3
-- type: olm.channel
-  value:
-    name: stable
-    replaces: semver-operator.v0.3.0
 - type: olm.gvk
   value:
     group: example.my.domain
@@ -230,22 +208,12 @@ properties:
   value:
     packageName: semver-operator
     version: 0.3.1
-- type: olm.skips
-  value: semver-operator.v0.3.0
 schema: olm.bundle
 ---
 image: quay.io/joelanford/semver-operator-bundle:v0.3.2
 name: semver-operator.v0.3.2
 package: semver-operator
 properties:
-- type: olm.channel
-  value:
-    name: beta
-    replaces: semver-operator.v0.2.3
-- type: olm.channel
-  value:
-    name: stable
-    replaces: semver-operator.v0.3.0
 - type: olm.gvk
   value:
     group: example.my.domain
@@ -255,24 +223,12 @@ properties:
   value:
     packageName: semver-operator
     version: 0.3.2
-- type: olm.skips
-  value: semver-operator.v0.3.0
-- type: olm.skips
-  value: semver-operator.v0.3.1
 schema: olm.bundle
 ---
 image: quay.io/joelanford/semver-operator-bundle:v0.3.3
 name: semver-operator.v0.3.3
 package: semver-operator
 properties:
-- type: olm.channel
-  value:
-    name: beta
-    replaces: semver-operator.v0.2.3
-- type: olm.channel
-  value:
-    name: stable
-    replaces: semver-operator.v0.3.0
 - type: olm.gvk
   value:
     group: example.my.domain
@@ -282,10 +238,4 @@ properties:
   value:
     packageName: semver-operator
     version: 0.3.3
-- type: olm.skips
-  value: semver-operator.v0.3.0
-- type: olm.skips
-  value: semver-operator.v0.3.1
-- type: olm.skips
-  value: semver-operator.v0.3.2
 schema: olm.bundle

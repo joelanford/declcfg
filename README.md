@@ -66,7 +66,7 @@ When `--skip-patch` is enabled, a shorter replaces chain is created, with interm
 As shown below, versions with `*` are in the replacement chain, and versions with `X` are skipped by the highest patch
 version in that particular z-stream.
 ```
-* v0.1.0
+|  X v0.1.0
 |  X v0.1.1
 |  X v0.1.2
 * v0.1.3

@@ -1,5 +1,5 @@
 ---
-defaultChannel: stable
+defaultChannel: default
 name: semver-operator
 schema: olm.package
 ---
@@ -19,7 +19,15 @@ entries:
   replaces: semver-operator.v0.2.1
 - name: semver-operator.v0.2.3
   replaces: semver-operator.v0.2.2
-name: alpha
+- name: semver-operator.v0.3.0
+  replaces: semver-operator.v0.2.3
+- name: semver-operator.v0.3.1
+  replaces: semver-operator.v0.3.0
+- name: semver-operator.v0.3.2
+  replaces: semver-operator.v0.3.1
+- name: semver-operator.v0.3.3
+  replaces: semver-operator.v0.3.2
+name: default
 package: semver-operator
 schema: olm.channel
 ---
@@ -31,15 +39,7 @@ entries:
   replaces: semver-operator.v0.2.1
 - name: semver-operator.v0.2.3
   replaces: semver-operator.v0.2.2
-- name: semver-operator.v0.3.0
-  replaces: semver-operator.v0.2.3
-- name: semver-operator.v0.3.1
-  replaces: semver-operator.v0.3.0
-- name: semver-operator.v0.3.2
-  replaces: semver-operator.v0.3.1
-- name: semver-operator.v0.3.3
-  replaces: semver-operator.v0.3.2
-name: beta
+name: semver-operator-v0.2
 package: semver-operator
 schema: olm.channel
 ---
@@ -51,7 +51,7 @@ entries:
   replaces: semver-operator.v0.3.1
 - name: semver-operator.v0.3.3
   replaces: semver-operator.v0.3.2
-name: stable
+name: stable-v0.3
 package: semver-operator
 schema: olm.channel
 ---

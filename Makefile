@@ -12,7 +12,7 @@ export GIT_COMMIT_TIME = $(shell TZ=UTC git show -s --format=%cd --date=format-l
 export GIT_TREE_STATE = $(shell sh -c '(test -n "$(shell git status -s)" && echo "dirty") || echo "clean"')
 
 GOLANGCILINT_VERSION = 1.41.1
-GORELEASER_VERSION = 0.156.1
+GORELEASER_VERSION = 0.177.0
 
 GO_BUILD_ARGS = \
   -gcflags "all=-trimpath=$(shell dirname $(shell pwd))" \

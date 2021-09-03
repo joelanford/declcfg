@@ -1,7 +1,9 @@
 package action
 
 import (
+	"bytes"
 	"fmt"
+	"html/template"
 	"sort"
 
 	"github.com/blang/semver/v4"
@@ -14,8 +16,9 @@ import (
 type Semver struct {
 	Configs      declcfg.DeclarativeConfig
 	PackageName  string
-	ChannelNames []string
 	SkipPatch    bool
+	TemplateStrings []string
+	SemverRange semver.Range
 }
 
 func (s Semver) Run() (*declcfg.DeclarativeConfig, error) {
@@ -24,48 +27,29 @@ func (s Semver) Run() (*declcfg.DeclarativeConfig, error) {
 		return nil, fmt.Errorf("failed to copy input DC: %v", err)
 	}
 
-	channels := []*declcfg.Channel{}
-	channelNameSet := sets.NewString(s.ChannelNames...)
-	foundChannels := sets.NewString()
-	entries := sets.NewString()
+	// build a map of bundles in the package, mapping their name to their semver version
+	versions, err := getBundleVersionsInPackage(s.PackageName, s.SemverRange, out.Bundles)
+	if err != nil {
+		return nil, fmt.Errorf("get bundle versions in package %q: %v", s.PackageName, err)
+	}
+
+	// generate semver-based channels, containing (still disconnected) entries
+	channels, err := s.generateChannels(versions)
+	if err != nil {
+		return nil, fmt.Errorf("generate channels: %v", err)
+	}
+
+	// delete any channels from out that have the same name as the generated
+	// channel names. we're rebuilding these channels.
+	tmp := out.Channels[:0]
 	for _, ch := range out.Channels {
-		ch := ch
-		if ch.Package != s.PackageName {
-			continue
-		}
-		if channelNameSet.Len() == 0 ||  channelNameSet.Has(ch.Name) {
-			channels = append(channels, &ch)
-			foundChannels = foundChannels.Insert(ch.Name)
-			for _, e := range ch.Entries {
-				entries = entries.Insert(e.Name)
-			}
+		if _, ok := channels[ch.Name]; !ok {
+			tmp = append(tmp, ch)
 		}
 	}
+	out.Channels = tmp
 
-	missingChannels := channelNameSet.Difference(foundChannels)
-	if missingChannels.Len() > 0  {
-		return nil, fmt.Errorf("could not find specified channels: %v", missingChannels.List())
-	}
-
-	versions := map[string]semver.Version{}
-	for _, b := range out.Bundles {
-		if b.Package != s.PackageName || !entries.Has(b.Name) {
-			continue
-		}
-		props, err := property.Parse(b.Properties)
-		if err != nil {
-			return nil, fmt.Errorf("parse properties for bundle %q: %v", b.Name, err)
-		}
-		if len(props.Packages) != 1 {
-			return nil, fmt.Errorf("bundle %q has multiple %q properties, expected exactly 1", b.Name, property.TypePackage)
-		}
-		v, err := semver.Parse(props.Packages[0].Version)
-		if err != nil {
-			return nil, fmt.Errorf("bundle %q has invalid version %q: %v", b.Name, props.Packages[0].Version, err)
-		}
-		versions[b.Name] = v
-	}
-
+	// hook up the edges for each channel, and then add the channel to out.
 	for _, ch := range channels {
 		ch := ch
 		sort.Slice(ch.Entries, func(i,j int) bool {
@@ -105,9 +89,80 @@ func (s Semver) Run() (*declcfg.DeclarativeConfig, error) {
 				Skips:     curSkips.List(),
 			}
 		}
+		out.Channels = append(out.Channels, *ch)
 	}
 
 	return &out, nil
+}
+
+func getBundleVersionsInPackage(pkgName string, semverRange semver.Range, allBundles []declcfg.Bundle) (map[string]semver.Version, error) {
+	versions := map[string]semver.Version{}
+	for _, b := range allBundles {
+		if b.Package != pkgName {
+			continue
+		}
+		props, err := property.Parse(b.Properties)
+		if err != nil {
+			return nil, fmt.Errorf("parse properties for bundle %q: %v", b.Name, err)
+		}
+		if len(props.Packages) != 1 {
+			return nil, fmt.Errorf("bundle %q has multiple %q properties, expected exactly 1", b.Name, property.TypePackage)
+		}
+		v, err := semver.Parse(props.Packages[0].Version)
+		if err != nil {
+			return nil, fmt.Errorf("bundle %q has invalid version %q: %v", b.Name, props.Packages[0].Version, err)
+		}
+
+		if semverRange(v) {
+			versions[b.Name] = v
+		}
+	}
+	return versions, nil
+}
+
+func (s Semver) generateChannels(bundles map[string]semver.Version) (map[string]*declcfg.Channel, error) {
+	var tmpls []*template.Template
+	for _, tStr := range s.TemplateStrings {
+		t, err := template.New("").Parse(tStr)
+		if err != nil {
+			return nil, err
+		}
+		tmpls = append(tmpls, t)
+	}
+
+	channels := map[string]*declcfg.Channel{}
+	for name, version := range bundles {
+		for _, t := range tmpls {
+			chName := mustExecuteString(t, version)
+			addChannelEntry(channels, s.PackageName, chName, name)
+		}
+	}
+	return channels, nil
+}
+
+func newChannel(pkgName, chName string) *declcfg.Channel {
+	return &declcfg.Channel{
+		Schema:  "olm.channel",
+		Name:    chName,
+		Package: pkgName,
+	}
+}
+
+func addChannelEntry(channels map[string]*declcfg.Channel, pkgName, chName, entryName string) {
+	ch, ok := channels[chName]
+	if !ok {
+		ch = newChannel(pkgName, chName)
+		channels[chName] = ch
+	}
+	ch.Entries = append(ch.Entries, declcfg.ChannelEntry{Name: entryName})
+}
+
+func mustExecuteString(t *template.Template, data interface{}) string {
+	buf := &bytes.Buffer{}
+	if err := t.Execute(buf, data); err != nil {
+		panic(err)
+	}
+	return buf.String()
 }
 
 func getMinorVersion(v semver.Version) semver.Version {

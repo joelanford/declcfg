@@ -7,62 +7,24 @@ rm -f index.Dockerfile index-skippatch.Dockerfile
 
 # Create the raw temporary index
 mkdir tmp 
-opm init semver-operator --default-channel=stable -o yaml > tmp/tmp.yaml
+opm init semver-operator --default-channel=default -o yaml > tmp/index.yaml
 
-yq eval-all -i '[.] | . += [{"schema":"olm.channel", "package":"semver-operator", "name":"alpha"}]  | .[] | splitDoc' tmp/tmp.yaml
-yq eval-all -i '[.] | . += [{"schema":"olm.channel", "package":"semver-operator", "name":"beta"}]   | .[] | splitDoc' tmp/tmp.yaml
-yq eval-all -i '[.] | . += [{"schema":"olm.channel", "package":"semver-operator", "name":"stable"}] | .[] | splitDoc' tmp/tmp.yaml
-
-opm render quay.io/joelanford/semver-operator-bundle:v0.1.0 -o yaml >> tmp/tmp.yaml
-opm render quay.io/joelanford/semver-operator-bundle:v0.1.1 -o yaml >> tmp/tmp.yaml
-opm render quay.io/joelanford/semver-operator-bundle:v0.1.2 -o yaml >> tmp/tmp.yaml
-opm render quay.io/joelanford/semver-operator-bundle:v0.1.3 -o yaml >> tmp/tmp.yaml
-
-opm render quay.io/joelanford/semver-operator-bundle:v0.2.0 -o yaml >> tmp/tmp.yaml
-opm render quay.io/joelanford/semver-operator-bundle:v0.2.1 -o yaml >> tmp/tmp.yaml
-opm render quay.io/joelanford/semver-operator-bundle:v0.2.2 -o yaml >> tmp/tmp.yaml
-opm render quay.io/joelanford/semver-operator-bundle:v0.2.3 -o yaml >> tmp/tmp.yaml
-
-opm render quay.io/joelanford/semver-operator-bundle:v0.3.0 -o yaml >> tmp/tmp.yaml
-opm render quay.io/joelanford/semver-operator-bundle:v0.3.1 -o yaml >> tmp/tmp.yaml
-opm render quay.io/joelanford/semver-operator-bundle:v0.3.2 -o yaml >> tmp/tmp.yaml
-opm render quay.io/joelanford/semver-operator-bundle:v0.3.3 -o yaml >> tmp/tmp.yaml
-
-yq eval-all -i 'select(.schema=="olm.channel" and .name=="alpha").entries  += [
-	{"name":"semver-operator.v0.1.0"},
-	{"name":"semver-operator.v0.2.0"},
-	{"name":"semver-operator.v0.1.1"},
-	{"name":"semver-operator.v0.2.1"},
-	{"name":"semver-operator.v0.1.2"},
-	{"name":"semver-operator.v0.2.2"},
-	{"name":"semver-operator.v0.1.3"},
-	{"name":"semver-operator.v0.2.3"}
-]' tmp/tmp.yaml
-yq eval-all -i 'select(.schema=="olm.channel" and .name=="beta").entries   += [
-	{"name":"semver-operator.v0.2.0"},
-	{"name":"semver-operator.v0.3.0"},
-	{"name":"semver-operator.v0.2.1"},
-	{"name":"semver-operator.v0.3.1"},
-	{"name":"semver-operator.v0.2.2"},
-	{"name":"semver-operator.v0.3.2"},
-	{"name":"semver-operator.v0.2.3"},
-	{"name":"semver-operator.v0.3.3"}
-]' tmp/tmp.yaml
-yq eval-all -i 'select(.schema=="olm.channel" and .name=="stable").entries += [
-	{"name":"semver-operator.v0.3.0"},
-	{"name":"semver-operator.v0.3.1"},
-	{"name":"semver-operator.v0.3.2"},
-	{"name":"semver-operator.v0.3.3"}
-]' tmp/tmp.yaml
+for v in v*; do
+	opm render quay.io/joelanford/semver-operator-bundle:$v -o yaml >> tmp/index.yaml
+done
 
 # Build final index using semver ordering
-mkdir index
-declcfg semver tmp semver-operator -o yaml > index/index.yaml
+cp -r tmp index
+echo "$(declcfg semver index semver-operator -t "default" -o yaml)" > index/index.yaml
+echo "$(declcfg semver index semver-operator -r ">=0.3.0" -t "stable-v{{.Major}}.{{.Minor}}" -o yaml)" > index/index.yaml
+echo "$(declcfg semver index semver-operator -r ">0.1.x <0.3.0" -t "semver-operator-v{{.Major}}.{{.Minor}}" -o yaml)" > index/index.yaml
 opm alpha generate dockerfile index
 
 # Build final index using semver-skippatch ordering
-mkdir index-skippatch
-declcfg semver tmp semver-operator --skip-patch -o yaml > index-skippatch/index.yaml
+cp -r tmp index-skippatch
+echo "$(declcfg semver index-skippatch semver-operator -t "default" --skip-patch -o yaml)" > index-skippatch/index.yaml
+echo "$(declcfg semver index-skippatch semver-operator -r ">=0.3.0" -t "stable-v{{.Major}}.{{.Minor}}" --skip-patch -o yaml)" > index-skippatch/index.yaml
+echo "$(declcfg semver index-skippatch semver-operator -r ">0.1.x <0.3.0" -t "semver-operator-v{{.Major}}.{{.Minor}}" --skip-patch -o yaml)" > index-skippatch/index.yaml
 opm alpha generate dockerfile index-skippatch
 
 # Delete the tmp index
